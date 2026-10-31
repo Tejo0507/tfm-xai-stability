@@ -42,7 +42,7 @@ def collect(root: Path) -> pd.DataFrame:
             "sign_flip": metrics.sign_flip_rate(phis),
             **metrics.variance_components(phis_seeds),
             "logloss_mean": float(-np.log(np.clip(p_true, EPS, 1)).mean()),
-            "logloss_sd_ctx": float(-np.log(np.clip(p_true, EPS, 1)).mean(1).std(ddof=1)),
+            "logloss_sd_ctx": float((-np.log(np.clip(p_true, EPS, 1))).mean(1).std(ddof=1)),
             "p_true_sd_point": float(p_true.std(0, ddof=1).mean()),
             "sec_per_run": float(np.mean([load[(c, seeds[0])]["seconds"] for c in complete])),
         }

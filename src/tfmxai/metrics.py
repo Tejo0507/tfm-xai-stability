@@ -51,7 +51,7 @@ def variance_components(phis_seeds: np.ndarray) -> dict:
     ctx_var = phis_seeds.mean(0).var(0, ddof=1).mean()
     seed_var = phis_seeds.var(0, ddof=1).mean() if phis_seeds.shape[0] > 1 else np.nan
     return {"var_context": float(ctx_var), "var_seed": float(seed_var),
-            "vr": float(ctx_var / seed_var) if seed_var and seed_var > 0 else float("inf")}
+            "vr": float(ctx_var / seed_var) if seed_var > 0 else float("nan")}  # nan: deterministic model + exact SV
 
 
 def oracle_error(phis: np.ndarray, phi_true: np.ndarray) -> dict:
