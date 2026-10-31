@@ -47,5 +47,6 @@ def test_metrics_identical_contexts_are_perfectly_stable():
     assert metrics.local_kendall(phis) == pytest.approx(1.0)
     assert metrics.topk_jaccard(phis) == pytest.approx(1.0)
     assert metrics.sign_flip_rate(phis) == 0.0
-    comps = metrics.variance_components(np.stack([phis, phis + 0.01]))
+    comps = metrics.variance_components(phis, np.stack([phis, phis + 0.01]))
     assert comps["var_context"] == pytest.approx(0.0, abs=1e-12)
+    assert comps["var_seed"] > 0 and np.isnan(comps["var_explainer"])

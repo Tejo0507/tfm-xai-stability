@@ -45,13 +45,15 @@ def sign_flip_rate(phis: np.ndarray, min_share: float = 0.05) -> float:
     return float(flipped[relevant].mean()) if relevant.any() else float("nan")
 
 
-def variance_components(phis_seeds: np.ndarray) -> dict:
-    """phis_seeds: [S seeds, M contexts, n, d]. Context variance of the seed-averaged phi
-    vs. within-context variance across seeds (model randomness + explainer noise)."""
-    ctx_var = phis_seeds.mean(0).var(0, ddof=1).mean()
-    seed_var = phis_seeds.var(0, ddof=1).mean() if phis_seeds.shape[0] > 1 else np.nan
-    return {"var_context": float(ctx_var), "var_seed": float(seed_var),
-            "vr": float(ctx_var / seed_var) if seed_var > 0 else float("nan")}  # nan: deterministic model + exact SV
+def variance_components(phis: np.ndarray, model_reps: np.ndarray | None = None,
+                        explainer_reps: np.ndarray | None = None) -> dict:
+    """phis: [M contexts, n, d], one run per context. *_reps: [R replicates, C contexts, n, d],
+    the same contexts rerun with another model seed / explainer seed. Variances are
+    per-(point, feature), averaged. vr = context variance / model-seed variance."""
+    within = lambda reps: float(reps.var(0, ddof=1).mean()) if reps is not None else np.nan  # noqa: E731
+    ctx_var, seed_var = float(phis.var(0, ddof=1).mean()), within(model_reps)
+    return {"var_context": ctx_var, "var_seed": seed_var, "var_explainer": within(explainer_reps),
+            "vr": ctx_var / seed_var if seed_var > 0 else np.nan}  # nan: deterministic model
 
 
 def oracle_error(phis: np.ndarray, phi_true: np.ndarray) -> dict:
