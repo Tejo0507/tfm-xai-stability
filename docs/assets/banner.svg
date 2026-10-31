@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-labelledby="title desc">
+  <title id="title">tfm-xai-stability</title>
+  <desc id="desc">Illustration: Shapley attributions for one test point change in size and sign as the in-context rows of a tabular foundation model are redrawn.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#58a6ff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#58a6ff"/>
+      <stop offset="1" stop-color="#ff7b72" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <style>
+    text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .title { font-size: 46px; font-weight: 700; fill: #f0f6fc; }
+    .sub { font-size: 18px; fill: #8b949e; }
+    .tags { font-size: 14px; fill: #58a6ff; letter-spacing: 0.3px; }
+    .panel-title { font-size: 14px; fill: #c9d1d9; font-weight: 600; }
+    .small { font-size: 12px; fill: #8b949e; }
+    .feat { font-size: 13px; fill: #c9d1d9; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+  </style>
+
+  <rect width="1200" height="320" rx="18" fill="url(#bg)"/>
+  <rect x="-400" y="314" width="400" height="3" fill="url(#accent)">
+    <animate attributeName="x" from="-400" to="1200" dur="6s" repeatCount="indefinite"/>
+  </rect>
+
+  <text x="60" y="122" class="title">tfm-xai-stability</text>
+  <text x="60" y="166" class="sub">How much do Shapley explanations of tabular foundation</text>
+  <text x="60" y="192" class="sub">models change when only the in-context rows change?</text>
+  <text x="60" y="246" class="tags">TabPFN-2.5 · TabICLv2 · exact &amp; KernelSHAP · 16 OpenML datasets</text>
+
+  <rect x="690" y="40" width="470" height="240" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="712" y="70" class="panel-title">Attributions for one test point</text>
+  <g class="small" text-anchor="end">
+    <text x="1140" y="70">context draw 1<animate attributeName="opacity" values="1;1;0;0;0;0;1" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/></text>
+    <text x="1140" y="70" opacity="0">context draw 2<animate attributeName="opacity" values="0;0;1;1;0;0;0" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/></text>
+    <text x="1140" y="70" opacity="0">context draw 3<animate attributeName="opacity" values="0;0;0;0;1;1;0" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/></text>
+  </g>
+
+  <line x1="930" y1="86" x2="930" y2="244" stroke="#484f58" stroke-width="1.5"/>
+  <g class="feat" text-anchor="end">
+    <text x="772" y="106">x1</text>
+    <text x="772" y="138">x2</text>
+    <text x="772" y="170">x3</text>
+    <text x="772" y="202">x4</text>
+    <text x="772" y="234">x5</text>
+  </g>
+
+  <!-- Each bar cycles through three context draws: positive bars grow right, negative left. -->
+  <g>
+    <rect y="92" height="20" rx="3" x="930" width="189" fill="#58a6ff">
+      <animate attributeName="width" values="189;189;147;147;178.5;178.5;189" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+    </rect>
+    <rect y="124" height="20" rx="3" x="930" width="105" fill="#58a6ff">
+      <animate attributeName="x" values="930;930;888;888;930;930;930" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="width" values="105;105;42;42;73.5;73.5;105" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#58a6ff;#58a6ff;#ff7b72;#ff7b72;#58a6ff;#58a6ff;#58a6ff" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+    </rect>
+    <rect y="156" height="20" rx="3" x="846" width="84" fill="#ff7b72">
+      <animate attributeName="x" values="846;846;804;804;930;930;846" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="width" values="84;84;126;126;21;21;84" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#ff7b72;#ff7b72;#ff7b72;#ff7b72;#58a6ff;#58a6ff;#ff7b72" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+    </rect>
+    <rect y="188" height="20" rx="3" x="930" width="31.5" fill="#58a6ff">
+      <animate attributeName="x" values="930;930;930;930;867;867;930" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="width" values="31.5;31.5;94.5;94.5;63;63;31.5" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#58a6ff;#58a6ff;#58a6ff;#58a6ff;#ff7b72;#ff7b72;#58a6ff" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+    </rect>
+    <rect y="220" height="20" rx="3" x="909" width="21" fill="#ff7b72">
+      <animate attributeName="x" values="909;909;930;930;877.5;877.5;909" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="width" values="21;21;10.5;10.5;52.5;52.5;21" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#ff7b72;#ff7b72;#58a6ff;#58a6ff;#ff7b72;#ff7b72;#ff7b72" keyTimes="0;0.27;0.33;0.6;0.66;0.93;1" dur="9s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <text x="712" y="266" class="small">Illustrative: same network and test point; only the context rows change.</text>
+</svg>
