@@ -1,0 +1,14 @@
+datasets: configs/datasets.yaml
+models: [tabpfn_v2_5, tabicl_v2, xgboost, logreg]
+k: [128, 512, 1024]          # 2048 dropped: it alone doubled the 4050 budget (timing, 2026-10-31)
+n_contexts: 10
+model_seeds: [0, 1]
+explainer_seeds: [0, 1]
+explainer_seed_contexts: 5   # extra explainer seed only on the first 5 contexts (KernelSHAP noise floor)
+sampling: uniform
+n_explain: 200
+n_estimators: 4              # same internal ensemble size for TabPFN and TabICL
+sv: {exact_if_d_le: 8, budget: 512, oracle_budget: 20000}
+device: cuda
+cpu_jobs: 4
+results_dir: results/main
