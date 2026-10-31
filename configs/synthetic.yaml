@@ -1,0 +1,14 @@
+datasets: configs/datasets_synthetic.yaml
+models: [tabpfn_v2_5, tabicl_v2, xgboost, logreg]
+k: [128, 512, 1024]
+n_contexts: 10
+model_seeds: [0, 1]
+explainer_seeds: [0]
+explainer_seed_contexts: 0
+sampling: uniform
+n_explain: 200
+n_estimators: 4
+sv: {exact_if_d_le: 10, budget: 512, oracle_budget: 20000}
+device: cuda
+cpu_jobs: 4
+results_dir: results/synthetic
