@@ -1,5 +1,5 @@
 """Model factory. One instance per run is refit for every coalition: TabPFN/TabICL `fit`
-only stores the context, and reusing the instance avoids reloading checkpoints."""
+only stores the context (TabICL needs `_CachedTabICL` for that to hold)."""
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -21,9 +21,7 @@ def make_model(name: str, seed: int, *, device: str = "cuda", n_estimators: int 
             version, device=device, n_estimators=n_estimators, random_state=seed
         )
     if name == "tabicl_v2":
-        from tabicl import TabICLClassifier
-
-        return TabICLClassifier(device=device, n_estimators=n_estimators, random_state=seed)
+        return _cached_tabicl()(device=device, n_estimators=n_estimators, random_state=seed)
     if name == "xgboost":
         from xgboost import XGBClassifier
 
@@ -35,3 +33,17 @@ def make_model(name: str, seed: int, *, device: str = "cuda", n_estimators: int 
         return make_pipeline(SimpleImputer(strategy="median"), StandardScaler(),
                              LogisticRegression(C=1.0, max_iter=2000))
     raise ValueError(f"unknown model: {name}")
+
+
+def _cached_tabicl():
+    from tabicl import TabICLClassifier
+
+    class _CachedTabICL(TabICLClassifier):
+        """TabICLClassifier.fit rebuilds the network and reloads the checkpoint every call
+        (~0.25 s, most of a coalition's cost). Weights are frozen, so load them once."""
+
+        def _load_model(self) -> None:
+            if getattr(self, "model_", None) is None:
+                super()._load_model()
+
+    return _CachedTabICL
