@@ -1,0 +1,21 @@
+# Main grid: 16 OpenML classification datasets, d <= 20, <= 10 classes, n >= ~2,300.
+# Validate (download, d, n, classes) with:  python -m tfmxai.timing --config configs/main.yaml
+datasets:
+  # binary
+  - {name: bank-marketing, openml_id: 1461}
+  - {name: adult, openml_id: 1590}
+  - {name: phoneme, openml_id: 1489}
+  - {name: electricity, openml_id: 151}
+  - {name: eeg-eye-state, openml_id: 1471}
+  - {name: wilt, openml_id: 40983}
+  - {name: churn, openml_id: 40701}
+  - {name: magic-telescope, openml_id: 1120}
+  - {name: mozilla4, openml_id: 1046}
+  # multiclass
+  - {name: pendigits, openml_id: 32}
+  - {name: japanese-vowels, openml_id: 375}
+  - {name: segment, openml_id: 40984}
+  - {name: wine-quality-white, openml_id: 40498}
+  - {name: page-blocks, openml_id: 30}
+  - {name: nursery, openml_id: 26}
+  - {name: jungle-chess, openml_id: 41027}

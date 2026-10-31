@@ -1,0 +1,5 @@
+# Pilot: one small-d binary, one mid-d binary, one KernelSHAP multiclass.
+datasets:
+  - {name: phoneme, openml_id: 1489}
+  - {name: electricity, openml_id: 151}
+  - {name: pendigits, openml_id: 32}

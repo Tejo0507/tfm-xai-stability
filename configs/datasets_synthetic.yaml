@@ -1,0 +1,8 @@
+# Logistic data with equicorrelated Gaussian features and a closed-form oracle value function.
+datasets:
+  - {name: syn-d5-rho0, d: 5, rho: 0.0}
+  - {name: syn-d5-rho0.5, d: 5, rho: 0.5}
+  - {name: syn-d5-rho0.9, d: 5, rho: 0.9}
+  - {name: syn-d10-rho0, d: 10, rho: 0.0}
+  - {name: syn-d10-rho0.5, d: 10, rho: 0.5}
+  - {name: syn-d10-rho0.9, d: 10, rho: 0.9}
