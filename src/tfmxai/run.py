@@ -132,7 +132,9 @@ def main() -> None:
                     lambda masks: coalition_values(model, X_ctx, y_ctx, ds.X_explain,
                                                    ds.y_explain, masks, ds.n_classes),
                     ds.d, exact_if_d_le=cfg["sv"]["exact_if_d_le"], budget=cfg["sv"]["budget"],
-                    rng=np.random.default_rng([seed, eseed, ctx, k]))
+                    # Not seeded by the model seed: model-seed replicates share coalitions,
+                    # so their spread is model noise only.
+                    rng=np.random.default_rng([eseed, ctx, k]))
                 secs = time.perf_counter() - t0
                 save_atomic(run_path(root, ds.name, name, k, ctx, seed, eseed), phi=phi,
                             v_full=v_full, ctx_idx=idx, exact=is_exact, seconds=secs)
