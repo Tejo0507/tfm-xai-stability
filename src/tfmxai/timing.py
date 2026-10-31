@@ -13,7 +13,7 @@ import numpy as np
 from tfmxai.contexts import context_rng, sample_context
 from tfmxai.data import load_dataset
 from tfmxai.models import GPU_MODELS, make_model
-from tfmxai.run import explainer_seeds_for, load_config
+from tfmxai.run import load_config, replicates_for
 from tfmxai.values import coalition_values
 
 warnings.filterwarnings("ignore")
@@ -36,8 +36,7 @@ def main() -> None:
         ds = load_dataset(spec, n_explain=cfg["n_explain"])
         exact = ds.d <= cfg["sv"]["exact_if_d_le"]
         n_coal = 2**ds.d if exact else cfg["sv"]["budget"]
-        eseeds = sum(len(explainer_seeds_for(cfg, c, exact)) for c in range(cfg["n_contexts"]))
-        runs = eseeds * len(cfg["model_seeds"])
+        runs = sum(len(replicates_for(cfg, c, exact)) for c in range(cfg["n_contexts"]))
         for name in models:
             model = make_model(name, 0, device=cfg["device"], n_estimators=cfg["n_estimators"],
                                cpu_jobs=cfg["cpu_jobs"])

@@ -5,6 +5,7 @@ from tfmxai import metrics
 from tfmxai.contexts import context_rng, sample_context
 from tfmxai.data import make_synthetic
 from tfmxai.models import make_model
+from tfmxai.run import replicates_for
 from tfmxai.shapley import all_masks, exact_shapley
 from tfmxai.values import coalition_values, true_class_logits
 
@@ -50,3 +51,10 @@ def test_metrics_identical_contexts_are_perfectly_stable():
     comps = metrics.variance_components(phis, np.stack([phis, phis + 0.01]))
     assert comps["var_context"] == pytest.approx(0.0, abs=1e-12)
     assert comps["var_seed"] > 0 and np.isnan(comps["var_explainer"])
+
+
+def test_replicates_only_on_first_contexts():
+    cfg = {"model_seeds": [0, 1], "explainer_seeds": [0, 1], "replicate_contexts": 3}
+    assert replicates_for(cfg, 0, exact=True) == [(0, 0), (1, 0)]
+    assert replicates_for(cfg, 0, exact=False) == [(0, 0), (1, 0), (0, 1)]
+    assert replicates_for(cfg, 3, exact=False) == [(0, 0)]
