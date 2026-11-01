@@ -7,7 +7,7 @@ from tfmxai.data import make_synthetic
 from tfmxai.models import make_model
 from tfmxai.run import replicates_for
 from tfmxai.shapley import all_masks, exact_shapley
-from tfmxai.values import coalition_values, true_class_logits
+from tfmxai.values import coalition_values, true_class_logits, varying_columns
 
 
 def test_contexts_deterministic_and_valid():
@@ -40,6 +40,15 @@ def test_refit_values_and_oracle_shapes():
     # A well-specified logistic model on 256 rows should track the oracle closely.
     phi, phi_true = exact_shapley(V, ds.d), exact_shapley(O, ds.d)
     assert np.corrcoef(phi.ravel(), phi_true.ravel())[0, 1] > 0.8
+
+
+def test_constant_coalitions_get_the_prior():
+    X = np.array([[1.0, np.nan, 0.0, np.nan], [1.0, np.nan, 1.0, 2.0], [1.0, np.nan, 0.0, 3.0]])
+    assert varying_columns(X).tolist() == [False, False, True, True]
+    X, y = X[:, [0, 2]], np.array([0, 1, 0])  # constant column, varying column
+    masks = np.array([[0, 0], [1, 0], [1, 1]], bool)
+    V = coalition_values(make_model("logreg", 0), X, y, X, y, masks, n_classes=2)
+    assert np.allclose(V[1], V[0]) and not np.allclose(V[2], V[0])
 
 
 def test_metrics_identical_contexts_are_perfectly_stable():

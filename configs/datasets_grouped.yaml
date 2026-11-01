@@ -1,0 +1,11 @@
+# Grouping ablation: main-grid datasets where |Spearman rho| > 0.7 merges features and
+# leaves at most 9 groups (exact Shapley over groups). Groups per dataset at 0.7:
+#   electricity 8 -> 7, wilt 5 -> 4, magic-telescope 10 -> 6, page-blocks 10 -> 6,
+#   segment 16 -> 7, eeg-eye-state 14 -> 9
+datasets:
+  - {name: electricity, openml_id: 151}
+  - {name: wilt, openml_id: 40983}
+  - {name: magic-telescope, openml_id: 1120}
+  - {name: page-blocks, openml_id: 30}
+  - {name: segment, openml_id: 40984}
+  - {name: eeg-eye-state, openml_id: 1471}

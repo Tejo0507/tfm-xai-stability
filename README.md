@@ -83,7 +83,7 @@ where $\hat\pi$ is the Laplace-smoothed class prior of the context. For a TFM, "
 
 and gives the variance ratio `VR = var_context / var_seed`.
 
-The full protocol, hypotheses and planned analyses are in [`docs/study-design.md`](docs/study-design.md).
+The full protocol, hypotheses and analyses are in [`docs/study-design.md`](docs/study-design.md).
 
 ## Project structure
 
@@ -93,14 +93,19 @@ tfm-xai-stability/
 │   ├── main.yaml                 # main experiment grid
 │   ├── pilot.yaml                # 3-dataset pilot
 │   ├── synthetic.yaml            # oracle experiments on synthetic data
+│   ├── ablation_*.yaml           # ensemble size, TabPFN version, stratified, grouped
 │   ├── datasets.yaml             # 16 OpenML datasets
+│   ├── datasets_exact.yaml       # ablation subset (d ≤ 8, exact Shapley values)
+│   ├── datasets_grouped.yaml     # grouping-ablation subset
 │   ├── datasets_pilot.yaml
 │   └── datasets_synthetic.yaml
 ├── docs/
 │   ├── assets/banner.svg
 │   └── study-design.md           # research protocol and hypotheses
+├── paper/                        # workshop paper draft (LaTeX)
 ├── scripts/
-│   └── tabpfn_login.py           # one-time TabPFN-2.5 license login (Windows-safe)
+│   ├── tabpfn_login.py           # one-time TabPFN-2.5 license login (Windows-safe)
+│   └── audit_constant_coalitions.py  # finds runs that hit an all-constant coalition
 ├── src/tfmxai/
 │   ├── __init__.py               # loads .env before model packages read their caches
 │   ├── data.py                   # OpenML + synthetic datasets, oracle value function
@@ -108,13 +113,21 @@ tfm-xai-stability/
 │   ├── models.py                 # model factory (TFMs and baselines)
 │   ├── values.py                 # refit coalition value function
 │   ├── shapley.py                # exact and paired KernelSHAP estimators
+│   ├── groups.py                 # correlation-grouped Shapley players
 │   ├── metrics.py                # stability metrics and variance components
 │   ├── run.py                    # resumable grid runner (CLI)
 │   ├── summarize.py              # per-cell summary table (CLI)
+│   ├── analysis.py               # hypothesis tests H1–H4 and figures (CLI)
+│   ├── ablations.py              # ablations against the main grid (CLI)
+│   ├── oracle_analysis.py        # synthetic ground-truth analysis (CLI)
+│   ├── example_figure.py         # Figure 1: one point, two contexts (CLI)
 │   └── timing.py                 # cost estimate before a run (CLI)
 ├── tests/
 │   ├── test_shapley.py
-│   └── test_pipeline.py
+│   ├── test_pipeline.py
+│   ├── test_analysis.py
+│   ├── test_groups.py
+│   └── test_oracle_analysis.py
 ├── .env.example
 ├── pyproject.toml
 ├── requirements.txt
@@ -225,9 +238,38 @@ python -m tfmxai.summarize --results results/main
 ```bash
 python -m tfmxai.run --config configs/synthetic.yaml
 python -m tfmxai.summarize --results results/synthetic
+python -m tfmxai.oracle_analysis --results results/synthetic
 ```
 
-The summary then also reports `oracle_tau` and `oracle_mae` against ground-truth Shapley values.
+The summary then also reports `oracle_tau` and `oracle_mae` against ground-truth Shapley values. `oracle_analysis` splits the error into bias and context variance, and checks whether 90% context-bagged intervals cover the truth.
+
+### 6. Ablations
+
+Each ablation has its own configuration and results directory. Contexts and explained points match the main grid:
+
+```bash
+python -m tfmxai.run --config configs/ablation_grouped.yaml
+python -m tfmxai.run --config configs/ablation_ensemble16.yaml --models tabpfn_v2_5
+```
+
+| Config | Varies |
+|---|---|
+| `ablation_ensemble1.yaml`, `ablation_ensemble16.yaml` | TFM internal ensemble size (main grid: 4) |
+| `ablation_version.yaml` | TabPFN v2 instead of TabPFN-2.5 |
+| `ablation_stratified.yaml` | Class-stratified context sampling |
+| `ablation_grouped.yaml` | Shapley values over groups of features with \|Spearman ρ\| > 0.7 |
+
+### 7. Analysis
+
+After the main grid is summarized:
+
+```bash
+python -m tfmxai.analysis --results results/main      # H1–H4: tests, figures, report.md
+python -m tfmxai.ablations --main results/main        # every finished ablation vs the main grid
+python -m tfmxai.example_figure --results results/main --dataset adult --model tabpfn_v2_5 --k 512
+```
+
+Outputs go to `results/main/analysis/`. The protocol behind each test is in [`docs/study-design.md`](docs/study-design.md#8-analyses).
 
 ### Useful flags
 
@@ -254,6 +296,7 @@ Experiment configurations are YAML files in [`configs/`](configs). The main grid
 | `explainer_seeds` | `[0, 1]` | KernelSHAP seeds. Seeds after the first run only on replicate contexts |
 | `replicate_contexts` | `3` | Number of leading contexts that get replicate runs |
 | `sampling` | `uniform` | Context sampler: `uniform` or `stratified` |
+| `grouping` | not set | Optional `{threshold: t}`: Shapley players become groups of features with \|Spearman ρ\| > t |
 | `n_explain` | `200` | Held-out points explained per dataset |
 | `n_estimators` | `4` | Internal ensemble size for TabPFN and TabICL |
 | `sv.exact_if_d_le` | `8` | Use exact Shapley values when *d* ≤ this |
@@ -299,7 +342,7 @@ results/<experiment>/
 
 | File | Contents |
 |---|---|
-| Run `.npz` | `phi` [n_explain, d] Shapley values; `v_full` [n_explain] full-model true-class logits; `ctx_idx` [k] context row indices; `exact`; `seconds` |
+| Run `.npz` | `phi` [n_explain, players] Shapley values; `v_full` [n_explain] full-model true-class logits; `ctx_idx` [k] context row indices; `groups` [d] player of each feature; `exact`; `seconds` |
 | `oracle.npz` | Ground-truth `phi` and `v_full` from the oracle value function |
 | `summary.csv` | One row per (dataset, model, k): `tau_local`, `tau_global`, `jaccard_top3`, `sign_flip`, `var_context`, `var_seed`, `var_explainer`, `vr`, `logloss_mean`, `logloss_sd_ctx`, `p_true_sd_point`, `sec_per_run`, and `oracle_tau` / `oracle_mae` for synthetic data |
 
@@ -330,9 +373,11 @@ What the pilot suggests, to be tested on the full grid:
 |---|---|
 | Pipeline, estimators and tests | Done |
 | Pilot (3 datasets) | Done |
-| Main grid (16 datasets × 4 models × 3 context sizes) | Running |
-| Synthetic oracle experiments | Configured |
-| Statistical analysis, remedy and ablations | Planned (see [`docs/study-design.md`](docs/study-design.md#8-planned-analyses)) |
+| Main grid (16 datasets × 4 models × 3 context sizes) | TabICL, XGBoost and logistic regression done; TabPFN-2.5 running |
+| Synthetic oracle experiments | Running |
+| Ablations | Configured, queued after the main grid |
+| Statistical analysis, remedy comparison, figures | Implemented; final numbers after the runs finish |
+| Paper | First draft in [`paper/`](paper) |
 
 ## Development
 
@@ -346,6 +391,10 @@ The unit tests check:
 - KernelSHAP efficiency and accuracy
 - that context sampling is deterministic
 - the refit value function against the synthetic oracle
+- that a coalition of context-constant features gets the empty-set value
+- the vectorised Kendall τ against SciPy, the variance-ratio bootstrap, the paired tests and context bagging
+- correlation grouping, and efficiency of grouped Shapley values
+- the bias–variance split and interval coverage used with the synthetic oracle
 
 GitHub Actions runs them on pushes to `main` and on every pull request.
 

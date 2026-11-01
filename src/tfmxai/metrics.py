@@ -6,13 +6,22 @@ import numpy as np
 from scipy.stats import kendalltau
 
 
+def kendall_rows(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Row-wise Kendall tau_b of a and b, both [n, d]; equals scipy's kendalltau per row
+    (NaN where a row is constant)."""
+    sa = np.sign(a[:, :, None] - a[:, None, :])
+    sb = np.sign(b[:, :, None] - b[:, None, :])
+    num = (sa * sb).sum((1, 2))
+    den = np.sqrt((sa**2).sum((1, 2)) * (sb**2).sum((1, 2)))
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return num / den
+
+
 def local_kendall(phis: np.ndarray) -> float:
     """Primary metric: mean pairwise Kendall tau_b of per-point |phi| rankings."""
-    M, n, _ = phis.shape
     absphi = np.abs(phis)
-    taus = [kendalltau(absphi[a, i], absphi[b, i]).statistic
-            for a, b in combinations(range(M), 2) for i in range(n)]
-    return float(np.nanmean(taus))
+    taus = [kendall_rows(absphi[a], absphi[b]) for a, b in combinations(range(len(phis)), 2)]
+    return float(np.nanmean(np.concatenate(taus)))
 
 
 def global_kendall(phis: np.ndarray) -> float:

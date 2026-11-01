@@ -23,6 +23,7 @@ import yaml
 
 from tfmxai.contexts import context_rng, sample_context
 from tfmxai.data import load_dataset
+from tfmxai.groups import correlation_groups, expand_masks
 from tfmxai.models import make_model
 from tfmxai.shapley import explain
 from tfmxai.values import coalition_values
@@ -97,13 +98,18 @@ def main() -> None:
     (root / "last_config.json").write_text(json.dumps(cfg, indent=2))
     for ds in datasets:
         save_oracle(ds, cfg, root)
+    # Shapley players: one per feature, or correlation groups (`grouping: {threshold: t}`).
+    groups = {ds.name: correlation_groups(ds.X_pool, cfg["grouping"]["threshold"])
+              if cfg.get("grouping") else np.arange(ds.d) for ds in datasets}
+    players = {name: int(g.max()) + 1 for name, g in groups.items()}
 
     plan = [(ctx, ds, k, name, seed, eseed)
             for ctx in range(cfg["n_contexts"])
             for ds in datasets
             for k in cfg["k"] if k <= len(ds.y_pool)
             for name in models
-            for seed, eseed in replicates_for(cfg, ctx, ds.d <= cfg["sv"]["exact_if_d_le"])]
+            for seed, eseed in replicates_for(cfg, ctx,
+                                              players[ds.name] <= cfg["sv"]["exact_if_d_le"])]
     todo = [(ctx, ds, k, name, seed, eseed) for ctx, ds, k, name, seed, eseed in plan
             if not run_path(root, ds.name, name, k, ctx, seed, eseed).exists()]
     print(f"{len(plan) - len(todo)}/{len(plan)} runs already done, {len(todo)} to go")
@@ -128,22 +134,24 @@ def main() -> None:
                 model = make_model(name, seed, device=cfg["device"],
                                    n_estimators=cfg["n_estimators"], cpu_jobs=cfg["cpu_jobs"])
                 t0 = time.perf_counter()
+                g, p = groups[ds.name], players[ds.name]
                 phi, v_full, is_exact, n_eval = explain(
                     lambda masks: coalition_values(model, X_ctx, y_ctx, ds.X_explain,
-                                                   ds.y_explain, masks, ds.n_classes),
-                    ds.d, exact_if_d_le=cfg["sv"]["exact_if_d_le"], budget=cfg["sv"]["budget"],
+                                                   ds.y_explain, expand_masks(masks, g),
+                                                   ds.n_classes),
+                    p, exact_if_d_le=cfg["sv"]["exact_if_d_le"], budget=cfg["sv"]["budget"],
                     # Not seeded by the model seed: model-seed replicates share coalitions,
                     # so their spread is model noise only.
                     rng=np.random.default_rng([eseed, ctx, k]))
                 secs = time.perf_counter() - t0
                 save_atomic(run_path(root, ds.name, name, k, ctx, seed, eseed), phi=phi,
-                            v_full=v_full, ctx_idx=idx, exact=is_exact, seconds=secs)
-                log.writerow([ds.name, name, k, ctx, seed, eseed, ds.d, n_eval, is_exact,
+                            v_full=v_full, ctx_idx=idx, exact=is_exact, seconds=secs, groups=g)
+                log.writerow([ds.name, name, k, ctx, seed, eseed, p, n_eval, is_exact,
                               round(secs, 2)])
                 fh.flush()
                 done += 1
                 print(f"[{len(plan) - len(todo) + done}/{len(plan)}] {ds.name:>18} {name:>11} "
-                      f"k={k:<5} c{ctx:02d} s{seed} e{eseed} d={ds.d:<3} {n_eval:>5} coal "
+                      f"k={k:<5} c{ctx:02d} s{seed} e{eseed} d={p:<3} {n_eval:>5} coal "
                       f"{secs:7.1f}s", flush=True)
     except KeyboardInterrupt:
         print("\nstopped; finished runs are saved, rerun the same command to resume")

@@ -27,14 +27,25 @@ def true_class_logits(proba: np.ndarray, present: np.ndarray, y: np.ndarray,
     return to_logit(p)
 
 
+def varying_columns(X: np.ndarray) -> np.ndarray:
+    """Columns that take more than one value in X (NaN counts as a value, all-NaN as constant)."""
+    first = X[:1]
+    same = (X == first) | (np.isnan(X) & np.isnan(first))
+    return ~same.all(axis=0)
+
+
 def coalition_values(model, X_ctx, y_ctx, X_exp, y_exp, masks, n_classes) -> np.ndarray:
-    """Evaluate v(S) for every mask row; returns [n_masks, n_explain]."""
+    """Evaluate v(S) for every mask row; returns [n_masks, n_explain].
+
+    A coalition whose features are all constant in the context carries no information,
+    so it gets v(empty) for every model (TabPFN refuses to fit such a context)."""
     present, y_enc = np.unique(y_ctx, return_inverse=True)
     if len(present) < 2:
         raise ValueError("context contains a single class")
+    varying = varying_columns(X_ctx)
     out = np.empty((len(masks), len(X_exp)))
     for r, S in enumerate(masks):
-        if not S.any():
+        if not (S & varying).any():
             out[r] = prior_logits(y_ctx, y_exp, n_classes)
             continue
         model.fit(X_ctx[:, S], y_enc)
