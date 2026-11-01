@@ -1,0 +1,9 @@
+# Ablation subset: the six main-grid datasets with d <= 8, explained with exact Shapley values,
+# so ablation effects are free of KernelSHAP noise. Same names, so contexts match the main grid.
+datasets:
+  - {name: phoneme, openml_id: 1489}
+  - {name: electricity, openml_id: 151}
+  - {name: wilt, openml_id: 40983}
+  - {name: mozilla4, openml_id: 1046}
+  - {name: nursery, openml_id: 26}
+  - {name: jungle-chess, openml_id: 41027}
