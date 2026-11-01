@@ -20,5 +20,12 @@ dist/
 results/
 *.part
 
+# LaTeX build output (the paper is rebuilt from paper/main.tex)
+paper/*.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+
 # Personal command reference, kept on the local machine only
 /run.py
