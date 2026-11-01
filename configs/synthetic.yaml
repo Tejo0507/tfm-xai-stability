@@ -1,10 +1,10 @@
 datasets: configs/datasets_synthetic.yaml
 models: [tabpfn_v2_5, tabicl_v2, xgboost, logreg]
-k: [128, 512, 1024]
+k: [128, 1024]               # 512 dropped: exact SV at d=10 is 1024 refits per run
 n_contexts: 10
 model_seeds: [0, 1]
 explainer_seeds: [0]
-replicate_contexts: 3
+replicate_contexts: 0       # seed noise is measured in the main grid; here only oracle error
 sampling: uniform
 n_explain: 200
 n_estimators: 4
