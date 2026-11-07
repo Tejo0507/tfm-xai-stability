@@ -7,7 +7,7 @@
 [![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch CUDA](https://img.shields.io/badge/PyTorch-CUDA%2012.8-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Status: research in progress](https://img.shields.io/badge/status-research%20in%20progress-orange)](#project-status)
+[![Status: experiments complete](https://img.shields.io/badge/status-experiments%20complete-green)](#project-status)
 
 [Overview](#overview) •
 [Method](#method) •
@@ -35,7 +35,7 @@ Tabular foundation models (TFMs) such as **TabPFN** and **TabICL** make predicti
 The same pipeline runs on XGBoost and logistic regression trained on **exactly the same row sets**. That makes it possible to ask whether TFM explanations are more or less stable than classical models at matched data size.
 
 > [!NOTE]
-> This is an active research project. The main experiment grid is running. The numbers below come from the pilot and are preliminary.
+> All experiments are finished. The final results are in the manuscript at [`paper/tmlr/`](paper/tmlr). The numbers in [Pilot results](#pilot-results) come from the pilot and are preliminary.
 
 ## Features
 
@@ -373,11 +373,12 @@ What the pilot suggests, to be tested on the full grid:
 |---|---|
 | Pipeline, estimators and tests | Done |
 | Pilot (3 datasets) | Done |
-| Main grid (16 datasets × 4 models × 3 context sizes) | TabICL, XGBoost and logistic regression done; TabPFN-2.5 running |
-| Synthetic oracle experiments | Running |
-| Ablations | Configured, queued after the main grid |
-| Statistical analysis, remedy comparison, figures | Implemented; final numbers after the runs finish |
-| Paper | First draft in [`paper/`](paper) |
+| Main grid (16 datasets × 4 models × 3 context sizes) | Done (2,856 runs) |
+| Synthetic oracle experiments | Done (480 runs) |
+| Ablations and the XGBoost sensitivity run | Done (2,262 runs) |
+| Statistical analysis, remedy comparison, robustness checks, figures | Done |
+| Reproducibility check | Done on a sample of 24 runs ([`scripts/compare_repro.py`](scripts/compare_repro.py)) |
+| Paper | TMLR manuscript in [`paper/tmlr/`](paper/tmlr), ready for author review; workshop draft kept in [`paper/main.tex`](paper/main.tex) |
 
 ## Development
 

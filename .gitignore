@@ -27,5 +27,16 @@ paper/*.bbl
 paper/*.blg
 paper/*.log
 
+# Downloaded third-party papers and venue pages used to prepare the manuscript
+paper/venue_corpus/
+
+# TMLR build output; main.pdf stays tracked as the submission file
+paper/tmlr/*.aux
+paper/tmlr/*.bbl
+paper/tmlr/*.blg
+paper/tmlr/*.log
+paper/tmlr/*.out
+paper/tmlr/submission/
+
 # Personal command reference, kept on the local machine only
 /run.py

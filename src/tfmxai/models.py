@@ -27,6 +27,12 @@ def make_model(name: str, seed: int, *, device: str = "cuda", n_estimators: int 
 
         return XGBClassifier(n_estimators=200, max_depth=4, learning_rate=0.1, subsample=0.8,
                              tree_method="hist", n_jobs=cpu_jobs, random_state=seed)
+    if name == "xgboost_shallow":  # sensitivity check: strongly regularised XGBoost
+        from xgboost import XGBClassifier
+
+        return XGBClassifier(n_estimators=100, max_depth=2, learning_rate=0.1, subsample=0.8,
+                             min_child_weight=5, tree_method="hist", n_jobs=cpu_jobs,
+                             random_state=seed)
     if name == "rf":
         return RandomForestClassifier(n_estimators=300, n_jobs=cpu_jobs, random_state=seed)
     if name == "logreg":
