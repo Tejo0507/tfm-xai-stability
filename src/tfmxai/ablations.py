@@ -19,7 +19,7 @@ import pandas as pd
 from scipy.stats import wilcoxon
 
 from tfmxai import metrics
-from tfmxai.analysis import LABEL, _md, bagging_curve, load_cell
+from tfmxai.analysis import _md, bagging_curve, load_cell
 from tfmxai.summarize import collect
 
 ABLATIONS = {"ensemble1": "n_estimators = 1", "ensemble16": "n_estimators = 16",

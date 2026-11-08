@@ -1,6 +1,6 @@
-"""Figures and LaTeX tables of the journal manuscript, generated from the result files only.
+"""Figures and LaTeX tables of the manuscript, generated from the result files only.
 
-    python -m tfmxai.paper_assets --out paper/tmlr
+    python -m tfmxai.paper_assets --out results/paper_assets
 
 Run `tfmxai.analysis`, `tfmxai.ablations`, `tfmxai.oracle_analysis` and `tfmxai.robustness`
 first. Nothing is typed by hand, so a table cannot drift from the outputs it reports.
@@ -13,7 +13,6 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 import pandas as pd
-import yaml
 
 from tfmxai.analysis import BASELINES, TFMS
 from tfmxai.data import load_dataset
@@ -491,7 +490,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--main", default="results/main")
     ap.add_argument("--config", default="configs/main.yaml")
-    ap.add_argument("--out", default="paper/tmlr")
+    ap.add_argument("--out", default="results/paper_assets")
     args = ap.parse_args()
     root = Path(args.main)
     res, rob = root / "analysis", root / "analysis" / "robustness"

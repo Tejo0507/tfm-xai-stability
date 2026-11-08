@@ -40,7 +40,6 @@ def sample_kernel_masks(d: int, budget: int, rng: np.random.Generator) -> np.nda
 
 def kernel_shapley(masks: np.ndarray, V: np.ndarray) -> np.ndarray:
     """masks[0] empty, masks[1] full, rest kernel-sampled. Returns phi [n, d]."""
-    d = masks.shape[1]
     v0, delta = V[0], V[1] - V[0]
     Z = masks[2:].astype(float)
     Y = V[2:] - v0

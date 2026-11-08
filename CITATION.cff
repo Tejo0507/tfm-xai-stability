@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code or its results, please cite it as below."
+title: "Shapley Explanations of Tabular Foundation Models Depend on the Context Sample"
+abstract: >-
+  Code and results for measuring how much Shapley-value explanations of tabular
+  foundation models (TabPFN, TabICL) change when only the in-context rows change.
+type: software
+authors:
+  - family-names: "M V S"
+    given-names: "Tejo Sridhar"
+    email: tm1872@srmist.edu.in
+    orcid: "https://orcid.org/0009-0007-5023-1092"
+    affiliation: "SRM Institute of Science and Technology"
+version: 1.0.0
+date-released: 2026-11-08
+license: Apache-2.0
+repository-code: "https://github.com/Tejo0507/tfm-xai-stability"
+keywords:
+  - explainable AI
+  - Shapley values
+  - tabular foundation models
+  - TabPFN
+  - TabICL
+  - in-context learning

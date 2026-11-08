@@ -20,23 +20,13 @@ dist/
 results/
 *.part
 
-# LaTeX build output (the paper is rebuilt from paper/main.tex)
-paper/*.pdf
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.log
+# Manuscript sources and manuscript-only tooling, kept on the local machine only
+/paper/
+/docs/study-design.md
+/scripts/check_manuscript.py
+/scripts/build_supplement.py
 
-# Downloaded third-party papers and venue pages used to prepare the manuscript
-paper/venue_corpus/
-
-# TMLR build output; main.pdf stays tracked as the submission file
-paper/tmlr/*.aux
-paper/tmlr/*.bbl
-paper/tmlr/*.blg
-paper/tmlr/*.log
-paper/tmlr/*.out
-paper/tmlr/submission/
-
-# Personal command reference, kept on the local machine only
+# Personal notes and command reference, kept on the local machine only
 /run.py
+/research-opportunities.md
+/study-plan-tfm-xai.md

@@ -1,4 +1,4 @@
-"""Hypothesis tests H1-H4 and figures for a finished grid (docs/study-design.md, §2 and §8).
+"""Hypothesis tests H1-H4 and figures for a finished grid.
 
     python -m tfmxai.analysis --results results/main --config configs/main.yaml
 

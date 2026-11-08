@@ -1,5 +1,5 @@
 """Synthetic ground truth: are context-specific attributions noisy estimates of a stable truth,
-and do context-bagged confidence intervals cover it? (docs/study-design.md, §7)
+and do context-bagged confidence intervals cover it?
 
     python -m tfmxai.oracle_analysis --results results/synthetic
 

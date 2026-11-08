@@ -1,4 +1,4 @@
-"""Robustness checks behind the journal manuscript; nothing here changes a run (paper/tmlr).
+"""Robustness checks of the main results; nothing here changes a run.
 
     python -m tfmxai.robustness --main results/main --synthetic results/synthetic
 
@@ -18,7 +18,7 @@ import pandas as pd
 from scipy.stats import wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-from tfmxai.analysis import BASELINES, LABEL, TFMS, _md, load_cell, paired_tests
+from tfmxai.analysis import BASELINES, TFMS, _md, paired_tests
 from tfmxai.metrics import kendall_rows
 from tfmxai.summarize import collect
 
@@ -204,7 +204,10 @@ def _powerlaw_tau(curve: pd.DataFrame, at: int) -> float:
 
 def _needed(curve: pd.DataFrame, target: float = 0.9) -> float:
     slope, icpt = np.polyfit(np.log(curve.M), np.log(np.clip(1 - curve.tau, 1e-6, None)), 1)
-    return float(np.exp((np.log(1 - target) - icpt) / slope)) if slope < 0 else np.inf
+    if slope >= 0:
+        return np.inf
+    with np.errstate(over="ignore"):  # a nearly flat decline overflows to inf, which is the answer
+        return float(np.exp((np.log(1 - target) - icpt) / slope))
 
 
 def bagging_backtest(curves: pd.DataFrame) -> pd.DataFrame:
