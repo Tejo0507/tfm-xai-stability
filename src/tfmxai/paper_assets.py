@@ -153,6 +153,98 @@ def fig_oracle(o: pd.DataFrame, out: Path) -> None:
     plt.close(fig)
 
 
+def fig_datasets(summary: pd.DataFrame, traits: pd.DataFrame, out: Path, k: int = 1024) -> None:
+    """Local tau of every model on every dataset at one context size, datasets ordered by d."""
+    s = summary[summary.k == k]
+    order = traits.sort_values(["d", "dataset"]).dataset.tolist()
+    d = traits.set_index("dataset").d
+    fig, ax = plt.subplots(figsize=(WIDTH, 3.0), layout="constrained")
+    y = np.arange(len(order))
+    for j, m in enumerate(MODELS):
+        g = s[s.model == m].set_index("dataset").reindex(order)
+        ax.plot(g.tau_local, y + (j - 1.5) * 0.13, MARKER[m], color=COLOR[m], ms=4, label=PLOT_NAME[m],
+                mfc=COLOR[m] if m in TFMS else "white")
+    for i in range(len(order)):
+        ax.axhline(i, color="#e6e6e6", lw=0.5, zorder=0)
+    split = sum(d[n] <= 8 for n in order) - 0.5
+    ax.axhline(split, color="k", lw=0.7, ls="--")
+    ax.text(1.01, split + 0.15, "KernelSHAP\n($d > 8$)", transform=ax.get_yaxis_transform(), ha="left",
+            va="bottom", fontsize=7)
+    ax.text(1.01, split - 0.15, "exact Shapley\n($d \\leq 8$)", transform=ax.get_yaxis_transform(), ha="left",
+            va="top", fontsize=7)
+    ax.set_yticks(y, [f"{n} ($d$={d[n]})" for n in order])
+    ax.set_ylim(-0.6, len(order) - 0.4)
+    ax.set_xlabel(f"local $\\tau$ between contexts at $k = {k}$ (higher = more stable)")
+    fig.legend(*ax.get_legend_handles_labels(), loc="outside upper center", ncol=4, frameon=False)
+    fig.savefig(out / "fig_datasets.pdf")
+    plt.close(fig)
+
+
+def fig_tradeoff(summary: pd.DataFrame, shallow: pd.DataFrame, out: Path) -> None:
+    """Stability against log-loss per dataset: all 16 datasets (left) and the six exact datasets with the
+    regularised XGBoost added (right), both at k = 1024."""
+    s = summary[summary.k == 1024]
+    exact = sorted(shallow.dataset.unique()) if not shallow.empty else []
+    fig, axes = plt.subplots(1, 2, figsize=(WIDTH, 2.6), sharey=True, layout="constrained")
+    panels = ((axes[0], s, "16 datasets"), (axes[1], s[s.dataset.isin(exact)], "six exact datasets"))
+    for ax, g, title in panels:
+        for m in MODELS:
+            h = g[g.model == m]
+            ax.scatter(h.logloss_mean, h.tau_local, marker=MARKER[m], s=14, color=COLOR[m], alpha=0.35, lw=0)
+            ax.scatter(h.logloss_mean.median(), h.tau_local.median(), marker=MARKER[m], s=55, color=COLOR[m],
+                       edgecolor="k", lw=0.6, label=PLOT_NAME[m], zorder=3)
+        ax.set_title(title)
+        ax.set_xlabel("log-loss on explained points (lower = better)")
+        ax.grid(alpha=0.3, lw=0.5)
+    if not shallow.empty:
+        h = shallow[shallow.k == 1024]
+        axes[1].scatter(h.logloss_mean, h.tau_local, marker="v", s=14, color="#CC79A7", alpha=0.35, lw=0)
+        axes[1].scatter(h.logloss_mean.median(), h.tau_local.median(), marker="v", s=55, color="#CC79A7",
+                        edgecolor="k", lw=0.6, label="XGBoost, depth 2", zorder=3)
+    axes[0].set_ylabel("local $\\tau$ (higher = more stable)")
+    handles, labels = axes[1].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside upper center", ncol=5, frameon=False)
+    fig.savefig(out / "fig_tradeoff.pdf")
+    plt.close(fig)
+
+
+def fig_remedy(remedy: pd.DataFrame, out: Path) -> None:
+    """Median local tau and cost of one context, a 16-member ensemble and a bag of four contexts."""
+    arms = [("single_ctx_nest4", "one context", "#BBBBBB", None),
+            ("single_ctx_nest16", "larger ensemble (16)", "#7F7F7F", "///"),
+            ("bag4_ctx_nest4", "bag of 4 contexts", "#009E73", None)]
+    cells = [(m, k) for m in TFMS for k in sorted(remedy.k.unique())]
+    fig, axes = plt.subplots(1, 2, figsize=(WIDTH, 2.3), layout="constrained",
+                             gridspec_kw={"width_ratios": [1.9, 1]})
+    ax = axes[0]
+    x = np.arange(len(cells))
+    for j, (col, lab, c, hatch) in enumerate(arms):
+        vals = [remedy[(remedy.model == m) & (remedy.k == k)][col].median() for m, k in cells]
+        ax.bar(x + (j - 1) * 0.26, vals, 0.25, color=c, hatch=hatch, edgecolor="k", lw=0.4, label=lab)
+    ax.set_xticks(x, [f"{PLOT_NAME[m]}\n$k$ = {k}" for m, k in cells], fontsize=6.8)
+    ax.set_ylabel("median local $\\tau$")
+    ax.set_ylim(0, 0.9)
+    ax.grid(axis="y", alpha=0.3, lw=0.5)
+    ax.legend(loc="upper left", ncol=3, frameon=False, fontsize=7)
+    ax = axes[1]
+    for m in TFMS:
+        g = remedy[remedy.model == m]
+        for k, mk in zip(sorted(g.k.unique()), ("o", "s")):
+            h = g[g.k == k]
+            ax.plot([h.sec_nest16.median(), h.sec_bag4.median()],
+                    [h.single_ctx_nest16.median(), h.bag4_ctx_nest4.median()], color=COLOR[m], lw=0.8)
+            ax.plot(h.sec_nest16.median(), h.single_ctx_nest16.median(), mk, color=COLOR[m], mfc="white")
+            ax.plot(h.sec_bag4.median(), h.bag4_ctx_nest4.median(), mk, color=COLOR[m],
+                    label=f"{PLOT_NAME[m]}, $k$ = {k}")
+    ax.set_xlabel("seconds per estimate (median)")
+    ax.set_ylabel("median local $\\tau$")
+    ax.grid(alpha=0.3, lw=0.5)
+    ax.legend(fontsize=6.5, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=2,
+              handlelength=1.0, columnspacing=0.8)
+    fig.savefig(out / "fig_remedy.pdf")
+    plt.close(fig)
+
+
 # ---------------------------------------------------------------- tables
 
 def _p(p: float) -> str:
@@ -417,6 +509,10 @@ def main() -> None:
     fig_stability(s, close, figs)
     fig_bagging(curves, figs)
     fig_oracle(o, figs)
+    fig_datasets(s, pd.read_csv(res / "dataset_traits.csv"), figs)
+    shallow_runs = root.parent / "ablation_xgb_shallow" / "summary.csv"
+    fig_tradeoff(s, pd.read_csv(shallow_runs) if shallow_runs.exists() else pd.DataFrame(), figs)
+    fig_remedy(pd.read_csv(res / "remedy.csv"), figs)
 
     tab_overview(s, close, tabs)
     tab_vr(vr, tabs)
